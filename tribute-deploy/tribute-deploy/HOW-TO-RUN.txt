@@ -1,0 +1,75 @@
+===================================================
+PASTOR SAMUEL TRIBUTE SITE — DEPLOYMENT GUIDE
+===================================================
+
+TECH STACK
+----------
+- Frontend: React + Vite (Node.js)
+- Backend:  Express API (Node.js)
+- Database: PostgreSQL
+- Runtime:  Node.js 20+, pnpm
+
+ENVIRONMENT VARIABLES NEEDED
+-----------------------------
+Set these on your host before starting:
+
+  DATABASE_URL                    = your PostgreSQL connection string
+                                    e.g. postgresql://user:pass@host:5432/dbname
+
+  SESSION_SECRET                  = any long random string (for security)
+
+  GOOGLE_SERVICE_ACCOUNT_EMAIL    = from your Google service account JSON
+  GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = from your Google service account JSON
+  GOOGLE_SHEET_ID                 = ID from your Google Sheet URL
+
+  VITE_ADMIN_PASSWORD             = password for /admin page (default: pastor60)
+
+  PORT                            = port for the API server (e.g. 5000)
+
+
+HOW TO RUN
+----------
+1. Install Node.js 20+ and pnpm on your host
+   (https://nodejs.org, https://pnpm.io)
+
+2. Restore the full project structure using the files provided,
+   or clone from your repository.
+
+3. Install dependencies:
+     pnpm install
+
+4. Push the database schema (first time only):
+     pnpm --filter @workspace/db run push
+
+5. Start the API server:
+     pnpm --filter @workspace/api-server run dev
+
+6. Start the frontend:
+     pnpm --filter @workspace/tribute run dev
+
+7. Visit http://localhost:PORT in your browser.
+
+
+KEY PAGES
+---------
+  /              Home page with countdown
+  /tributes      All testimonies
+  /share-testimony  Submit a testimony
+  /rsvp          RSVP form
+  /admin         Admin dashboard (password protected)
+
+  /api/tributes/export   Download all testimonies as CSV
+  /api/rsvp/export       Download all RSVPs as CSV
+
+
+NOTES
+-----
+- The admin page password is set via VITE_ADMIN_PASSWORD env var.
+  Default is "pastor60" — change it before going live.
+- Google Sheets auto-save requires all three GOOGLE_* env vars to be set.
+  If they are missing the site still works, just without auto-save.
+- For production, build the frontend with:
+    pnpm --filter @workspace/tribute run build
+  and serve the dist/ folder via Nginx or any static host.
+
+===================================================

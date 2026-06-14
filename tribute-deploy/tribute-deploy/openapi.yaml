@@ -1,0 +1,299 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification for Pastor Joseph Olusola Samuel @ 60
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: tributes
+    description: Tribute messages
+  - name: rsvp
+    description: RSVP registrations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /tributes:
+    get:
+      operationId: listTributes
+      tags: [tributes]
+      summary: List all tribute messages
+      responses:
+        "200":
+          description: List of tributes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tribute"
+    post:
+      operationId: createTribute
+      tags: [tributes]
+      summary: Submit a tribute message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TributeInput"
+      responses:
+        "201":
+          description: Tribute created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tribute"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /tributes/{id}:
+    patch:
+      operationId: updateTribute
+      tags: [tributes]
+      summary: Update a tribute by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TributeInput"
+      responses:
+        "200":
+          description: Updated tribute
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tribute"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    delete:
+      operationId: deleteTribute
+      tags: [tributes]
+      summary: Delete a tribute by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /tributes/stats:
+    get:
+      operationId: getTributeStats
+      tags: [tributes]
+      summary: Get tribute statistics
+      responses:
+        "200":
+          description: Tribute stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TributeStats"
+
+  /rsvp:
+    get:
+      operationId: listRsvps
+      tags: [rsvp]
+      summary: List all RSVPs
+      responses:
+        "200":
+          description: List of RSVPs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rsvp"
+    post:
+      operationId: createRsvp
+      tags: [rsvp]
+      summary: Submit an RSVP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RsvpInput"
+      responses:
+        "201":
+          description: RSVP submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rsvp"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /rsvp/stats:
+    get:
+      operationId: getRsvpStats
+      tags: [rsvp]
+      summary: Get RSVP counts by attendance type
+      responses:
+        "200":
+          description: RSVP statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RsvpStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    Tribute:
+      type: object
+      required: [id, authorName, message, relationship, createdAt]
+      properties:
+        id:
+          type: integer
+        authorName:
+          type: string
+        relationship:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    TributeInput:
+      type: object
+      required: [authorName, message, relationship]
+      properties:
+        authorName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        relationship:
+          type: string
+          minLength: 1
+          maxLength: 100
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+
+    TributeStats:
+      type: object
+      required: [totalCount, recentTributes]
+      properties:
+        totalCount:
+          type: integer
+        recentTributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tribute"
+
+    Rsvp:
+      type: object
+      required: [id, fullName, phone, attendance, createdAt]
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        phone:
+          type: string
+        attendance:
+          type: string
+          enum:
+            - "Yes, I will attend in person"
+            - "I will attend virtually"
+            - "No, I will not be able to attend"
+        createdAt:
+          type: string
+          format: date-time
+
+    RsvpInput:
+      type: object
+      required: [fullName, phone, attendance]
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 150
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+        attendance:
+          type: string
+          enum:
+            - "Yes, I will attend in person"
+            - "I will attend virtually"
+            - "No, I will not be able to attend"
+
+    RsvpStats:
+      type: object
+      required: [total, inPerson, virtual, notAttending]
+      properties:
+        total:
+          type: integer
+        inPerson:
+          type: integer
+        virtual:
+          type: integer
+        notAttending:
+          type: integer
+
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
